@@ -6,37 +6,64 @@ const getDb = require('../util/database').getDb;
 const {ObjectId}= require('mongodb');
 
 class User {
-  constructor(name,email,id){
+  constructor(name,email,cart,id){
     this.email=email;
     this.name=name;
-    this.ObjectId(_id)
+    this.cart = cart;
+    this._id = ObjectId(id)
   }
 
 
- save(){
-    const db = getDb();
-   return db.collection('users').insertOne(this) 
-    .then(result=>{
-        return result;
-      }).catch(err=>{
-        console.log(err);
+  save(){
+        const db = getDb();
+        return db.collection('users').insertOne(this) 
+          .then(result=>{
+              return result;
+            }).catch(err=>{
+              console.log(err);
+            })
+    }
+    addToCart(product){
+      const cartProductIndex = this.cart.items.findIndex(cp=>{
+           const cpProductId = new ObjectId(cp.productId);
+           const productId = new ObjectId(product._id);
+           return cpProductId.equals(productId);
       })
+    
+      let newQuantity=1;
+      const updatedCartItems= [...this.cart.items]
+      if(cartProductIndex>=0){
+        newQuantity = this.cart.items[cartProductIndex].quantity + 1;
+        updatedCartItems[cartProductIndex].quantity = newQuantity;
+      }else{
+        updatedCartItems.push({productId:new ObjectId(product._id), quantity: newQuantity})
+      }
+     
+      const UpdatedCart = {
+        items:updatedCartItems
+      };
+      const db = getDb();
+      return  db.collection('users').updateOne(
+        {_id:new ObjectId(this._id)},
+        {$set :{cart:UpdatedCart}}
+        )
     }
     static fetchAll(){
-      const db = getDb();
-      return db.collection('users').find().toArray().then(result=>{
-        return result;
-      }).catch(err=>{
-        console.log(err);
-      });
+        const db = getDb();
+        return db.collection('users').find().toArray().then(result=>{
+          return result;
+        }).catch(err=>{
+          console.log(err);
+        });
     }
+
     static findById(prodId){
-      const db = getDb();
-      return db.collection('users').findOne({_id:new ObjectId(prodId)}).then(result=>{
-        return result;
-      }).catch(err=>{
-        console.log(err);
-      });
+        const db = getDb();
+        return db.collection('users').findOne({_id:new ObjectId(prodId)}).then(result=>{
+          return result;
+        }).catch(err=>{
+          console.log(err);
+        });
     }
 }
 // const User = sequelize.define('user', {

@@ -17,12 +17,12 @@ class Product {
     const db = getDb();
     let dbOp;
 
-    console.log(ObjectId(null),"uppppppppppppppppppppppppppppp");
+
     if(this._id){
       dbOp=db.collection('products').updateOne({_id:this._id},{$set:this}) 
       
     } else{
-      console.log("heyyyyyyyyyyyyyyyyyyy");
+     
       dbOp=db.collection('products').insertOne(this) 
     }
 
@@ -56,7 +56,7 @@ class Product {
   static deletProd(prodId){
     const db = getDb();
     return db.collection('products').deleteOne({_id:new ObjectId(prodId)}).then(result=>{
-      console.log("llllll",result);
+  
       return result;
     }).catch(err=>{
       console.log(err);
