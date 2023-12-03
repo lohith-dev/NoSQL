@@ -4,9 +4,10 @@ const express = require('express');
 const bodyParser = require('body-parser');
 
 const errorController = require('./controllers/error');
-const mongoConnect = require('./util/database').mongoConnect;
+// const mongoConnect = require('./util/database').mongoConnect;
+const mongoose = require('mongoose');
 
-const User = require('./models/user.js')
+const User = require('./models/user')
 
 const app = express();
 const cors = require('cors');
@@ -23,13 +24,12 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use((req, res, next) => {
-  User.findById('656b10188a372b55669c200c')
+  User.findById('656c4ed2093a0bc22b4d17ed')
     .then(user => {
-      req.user = new User(user.name,user.email,user.cart,user._id);
+      req.user = user;
       next();
     })
     .catch(err => console.log(err));
-
 });
 
 
@@ -37,10 +37,29 @@ app.use('/admin', adminRoutes);
 app.use(shopRoutes);
 
 app.use(errorController.get404);
+const options = { useNewUrlParser: true };
 
-mongoConnect(() => {
 
-app.listen(8000,()=>{
-    console.log("listening @ port 8000");
-  });
+mongoose.connect('mongodb+srv://srlohith92:Lohith%40123@cluster0.kce3sda.mongodb.net/shop',options)
+  .then(result => {
+    User.findOne().then(user=>{
+      if(!user){
+        const user = new User({
+          name:'lohith',
+          email:'lohith@gmail.com',
+          cart:{
+            items:[]
+          }
+      });
+      user.save();
+      }
+    })
+   
+    app.listen(8000,()=>{
+      console.log("listening @ port 8000");
+    });
+  })
+  .catch(err => {
+    console.log(err);
 });
+
